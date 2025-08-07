@@ -23,4 +23,4 @@ jobs:
         with:
           file: Dockerfile
           push: true
-          tags: umidjon12346/ci_cd:1.0
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/ci_cdd:1.0
