@@ -11,10 +11,17 @@ jobs:
       - name: Lint Tekshirish
         run: npm run lint
   test:
+    needs: [lint]
+    strategy: 
+      matrix:
+        version: [18,22,20]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-versions : ${{matrix.version}}
       - name: Install
         run: npm ci
       - name: Testni Tekshirish
