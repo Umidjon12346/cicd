@@ -1,20 +1,66 @@
+# name: Deploy to VPS
+# on:
+#   push:
+#     branches:
+#       - main
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Kodni yuklash
+#         uses: actions/checkout@v4
+#       - name: SSH kalitni sozlash
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+#         shell: bash
+#       - name: Serverga deploy qilish
+#         env:
+#           HOST: ${{ secrets.HOST }}
+#           USER: ${{ secrets.USERNAME }}
+#           APP_DIR: /cicd
+#           PORT: ${{ secrets.PORT }}
+#         run: |
+#           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
+#           ssh $USER@$HOST "
+#             if [ ! -d $APP_DIR ]; then
+#               mkdir -p $APP_DIR
+#               git clone https://github.com/Umidjon12346/cicd.git $APP_DIR
+#               cd $APP_DIR
+#               echo 'PORT=${PORT}' > .env
+#             else 
+#               cd $APP_DIR
+#               git pull origin main
+#             fi
+#             npm install
+#             npm run build
+#             pm2 restart cicd || pm2 start dist/main.js --name cicd
+#           "
+#         shell: bash
+
+
 name: Deploy to VPS
+
 on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Kodni yuklash
         uses: actions/checkout@v4
+
       - name: SSH kalitni sozlash
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
         shell: bash
+
       - name: Serverga deploy qilish
         env:
           HOST: ${{ secrets.HOST }}
@@ -24,17 +70,25 @@ jobs:
         run: |
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
           ssh $USER@$HOST "
+            # Agar papka yo'q bo'lsa, yaratish va ruxsat berish
             if [ ! -d $APP_DIR ]; then
-              mkdir -p $APP_DIR
+              sudo mkdir -p $APP_DIR
+              sudo chown -R $USER:$USER $APP_DIR
               git clone https://github.com/Umidjon12346/cicd.git $APP_DIR
               cd $APP_DIR
               echo 'PORT=${PORT}' > .env
             else 
               cd $APP_DIR
+              git reset --hard
               git pull origin main
             fi
-            npm install
+
+            # NPM install va build
+            npm install --legacy-peer-deps
             npm run build
+
+            # PM2 orqali ishga tushirish
             pm2 restart cicd || pm2 start dist/main.js --name cicd
+            pm2 save
           "
         shell: bash
