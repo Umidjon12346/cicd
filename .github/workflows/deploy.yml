@@ -19,7 +19,7 @@ jobs:
         env:
           HOST: ${{ secrets.HOST }}
           USER: ${{ secrets.USERNAME }}
-          APP_DIR: /ci_cd
+          APP_DIR: /cicd
           PORT: ${{ secrets.PORT }}
         run: |
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
@@ -35,6 +35,6 @@ jobs:
             fi
             npm install
             npm run build
-            pm2 restart ci_cd || pm2 start dist/main.js --name ci_cd
+            pm2 restart cicd || pm2 start dist/main.js --name cicd
           "
         shell: bash
